@@ -10,7 +10,7 @@ namespace gravitySensorReader
         const string logPath = @"d:\logs\accelerometer data.txt";
 
         private SerialPort serialPort;
-        private GravityData GravityData = new GravityData();
+        private GravityData gravityData = new GravityData();
 
         public frmMain()
         {
@@ -28,15 +28,15 @@ namespace gravitySensorReader
             chart1.ChartAreas[0].AxisY.Interval = 1.0F;
             chart1.ChartAreas[0].AxisY.Maximum = 2;            
 
-            txtX.DataBindings.Add("Text", GravityData, "X");
-            txtY.DataBindings.Add("Text", GravityData, "Y");
-            txtZ.DataBindings.Add("Text", GravityData, "Z");
-            txtXMax.DataBindings.Add("Text", GravityData, "XMax");
-            txtYMax.DataBindings.Add("Text", GravityData, "YMax");
-            txtZMax.DataBindings.Add("Text", GravityData, "ZMax");
-            txtXMin.DataBindings.Add("Text", GravityData, "XMin");
-            txtYMin.DataBindings.Add("Text", GravityData, "YMin");
-            txtZMin.DataBindings.Add("Text", GravityData, "ZMin");
+            txtX.DataBindings.Add("Text", gravityData, "X");
+            txtY.DataBindings.Add("Text", gravityData, "Y");
+            txtZ.DataBindings.Add("Text", gravityData, "Z");
+            txtXMax.DataBindings.Add("Text", gravityData, "XMax");
+            txtYMax.DataBindings.Add("Text", gravityData, "YMax");
+            txtZMax.DataBindings.Add("Text", gravityData, "ZMax");
+            txtXMin.DataBindings.Add("Text", gravityData, "XMin");
+            txtYMin.DataBindings.Add("Text", gravityData, "YMin");
+            txtZMin.DataBindings.Add("Text", gravityData, "ZMin");
 
             // Select highest port speed by default
             cboPortSpeed.SelectedIndex = cboPortSpeed.Items.Count - 1;
@@ -84,7 +84,7 @@ namespace gravitySensorReader
                 // This causes UI updates so it has to happen in the main thread.
                 this.Invoke(new Action(() =>
                 {
-                    GravityData.ProcessDataPoint(x, y, z);
+                    gravityData.ProcessDataPoint(x, y, z);
                     UpdateChart(x, y, z);
                 }));
 
