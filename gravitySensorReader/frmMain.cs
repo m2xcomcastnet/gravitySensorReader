@@ -5,6 +5,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,7 +14,7 @@ namespace gravitySensorReader
 {
     public partial class frmMain : Form
     {
-        const string logPath = @"d:\logs\accelerometer data.txt";
+        const string logPath = @"accelerometer data.txt";
 
         private SerialPort serialPort;
         private GravityData gravityData = new GravityData();
@@ -64,9 +65,16 @@ namespace gravitySensorReader
                 {
                     var tcpPort = int.Parse(txtPort.Text);
                     await StartTcpListener(txtIp.Text, tcpPort);
-                    btnRead.Enabled = true;
+					btnRead.Enabled = true;
                     btnStop.Enabled = false;
                 }
+                else if(cboSource.SelectedIndex == 1)
+                {
+					var tcpPort = int.Parse(txtPort.Text);
+					await StartUdpListener(txtIp.Text, tcpPort);
+					btnRead.Enabled = true;
+					btnStop.Enabled = false;					
+				}
                 else
                 {
                     var portSpeed = int.Parse(cboPortSpeed.SelectedItem.ToString());
@@ -164,8 +172,8 @@ namespace gravitySensorReader
 
         private void cboSource_SelectedIndexChanged(object sender, EventArgs e)
         {
-            groupBoxTcpIp.Visible = cboSource.SelectedIndex == 0;
-            groupBoxSerial.Visible = cboSource.SelectedIndex == 1;
+            groupBoxTcpIp.Visible = cboSource.SelectedIndex == 0 || cboSource.SelectedIndex == 1;
+            groupBoxSerial.Visible = cboSource.SelectedIndex == 2;
         }
 
         private void LogDataReceived(string data)
@@ -196,7 +204,33 @@ namespace gravitySensorReader
             }
         }
 
-        private async Task StartTcpListener(string ip, int port)
+		private async Task StartUdpListener(string ip, int port)
+		{
+            using (var client = new UdpClient(port))
+            {
+                try
+                {
+                    IPAddress localAddr = GetHostName(ip);
+                    var remoteEndPoint = new IPEndPoint(localAddr, port);
+
+					using (tcpSocketTokenSource.Token.Register(() => client.Close()))
+                        while (!tcpSocketTokenSource.IsCancellationRequested)
+                        {
+                            var udpReceiveResult = await client.ReceiveAsync();
+							string data = Encoding.ASCII.GetString(udpReceiveResult.Buffer);
+							ProcessString(data);
+						}
+				}
+                catch (SocketException ex)
+                {
+                    Debug.WriteLine("SocketException: {0}", ex);
+                }
+                catch (OperationCanceledException) { /* Ignore */ }
+                catch (ObjectDisposedException) { /* Ignore */ }
+            }
+		}
+
+		private async Task StartTcpListener(string ip, int port)
         {
             TcpListener server = null;
             try

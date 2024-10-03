@@ -41,7 +41,7 @@ namespace gravitySensorReader
 
 
             // Raise data binding events for the UI at most 10 times a second. The UI was freezing without this.
-            if (new TimeSpan(DateTime.Now.Ticks - LastUiRefresh.Ticks).TotalMilliseconds > 100)
+            if (new TimeSpan(DateTime.Now.Ticks - LastUiRefresh.Ticks).TotalMilliseconds > 50)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(X)));
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(Y)));
