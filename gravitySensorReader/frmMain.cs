@@ -18,7 +18,7 @@ namespace gravitySensorReader
 
         private SerialPort serialPort;
         private GravityData gravityData = new GravityData();
-        private CancellationTokenSource tcpSocketTokenSource;
+        private CancellationTokenSource networkConnectionTokenSource;
 
         public frmMain()
         {
@@ -56,7 +56,7 @@ namespace gravitySensorReader
         {
             try
             {
-                tcpSocketTokenSource = new CancellationTokenSource(); 
+                networkConnectionTokenSource = new CancellationTokenSource(); 
 
                 btnRead.Enabled = false;
                 btnStop.Enabled = true;
@@ -65,15 +65,11 @@ namespace gravitySensorReader
                 {
                     var tcpPort = int.Parse(txtPort.Text);
                     await StartTcpListener(txtIp.Text, tcpPort);
-					btnRead.Enabled = true;
-                    btnStop.Enabled = false;
                 }
                 else if(cboSource.SelectedIndex == 1)
                 {
 					var tcpPort = int.Parse(txtPort.Text);
-					await StartUdpListener(txtIp.Text, tcpPort);
-					btnRead.Enabled = true;
-					btnStop.Enabled = false;					
+					await StartUdpListener(txtIp.Text, tcpPort);				
 				}
                 else
                 {
@@ -88,8 +84,10 @@ namespace gravitySensorReader
             catch(Exception ex)
             {
                 MessageBox.Show("Error occurred: " + ex.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+			}
+			btnRead.Enabled = true;
+			btnStop.Enabled = false;
+		}
 
         private void Port_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
@@ -153,7 +151,7 @@ namespace gravitySensorReader
             try
             {
                 serialPort?.Close();
-                tcpSocketTokenSource?.Cancel();
+                networkConnectionTokenSource?.Cancel();
             }
             catch (IOException) { }
         }
@@ -163,7 +161,7 @@ namespace gravitySensorReader
             try
             {
                 serialPort?.Close();
-                tcpSocketTokenSource.Cancel();
+                networkConnectionTokenSource.Cancel();
             }
             catch (IOException) { }
             btnRead.Enabled = true;
@@ -172,7 +170,7 @@ namespace gravitySensorReader
 
         private void cboSource_SelectedIndexChanged(object sender, EventArgs e)
         {
-            groupBoxTcpIp.Visible = cboSource.SelectedIndex == 0 || cboSource.SelectedIndex == 1;
+            groupBoxIpPort.Visible = cboSource.SelectedIndex == 0 || cboSource.SelectedIndex == 1;
             groupBoxSerial.Visible = cboSource.SelectedIndex == 2;
         }
 
@@ -213,13 +211,13 @@ namespace gravitySensorReader
                     IPAddress localAddr = GetHostName(ip);
                     var remoteEndPoint = new IPEndPoint(localAddr, port);
 
-					using (tcpSocketTokenSource.Token.Register(() => client.Close()))
-                        while (!tcpSocketTokenSource.IsCancellationRequested)
-                        {
-                            var udpReceiveResult = await client.ReceiveAsync();
-							string data = Encoding.ASCII.GetString(udpReceiveResult.Buffer);
-							ProcessString(data);
-						}
+					using (networkConnectionTokenSource.Token.Register(() => client.Close()))
+                    while (!networkConnectionTokenSource.IsCancellationRequested)
+                    {
+                        var udpReceiveResult = await client.ReceiveAsync();
+						string data = Encoding.ASCII.GetString(udpReceiveResult.Buffer);
+						ProcessString(data);
+					}
 				}
                 catch (SocketException ex)
                 {
@@ -246,8 +244,8 @@ namespace gravitySensorReader
                 Byte[] bytes = new Byte[256];
                 string data = null;
 
-                using (tcpSocketTokenSource.Token.Register(() => server.Stop())) 
-                while (!tcpSocketTokenSource.IsCancellationRequested)
+                using (networkConnectionTokenSource.Token.Register(() => server.Stop())) 
+                while (!networkConnectionTokenSource.IsCancellationRequested)
                 {
                     Debug.Write("Waiting for a connection... ");
 
@@ -264,7 +262,7 @@ namespace gravitySensorReader
                     int i;
 
                     // Loop to receive all the data sent by the client.
-                    while ((i = await stream.ReadAsync(bytes, 0, bytes.Length, tcpSocketTokenSource.Token)) != 0)
+                    while ((i = await stream.ReadAsync(bytes, 0, bytes.Length, networkConnectionTokenSource.Token)) != 0)
                     {
                         // Translate data bytes to a ASCII string.
                         data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);

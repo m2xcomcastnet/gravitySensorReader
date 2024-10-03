@@ -60,14 +60,14 @@
 			this.cboSource = new System.Windows.Forms.ComboBox();
 			this.label5 = new System.Windows.Forms.Label();
 			this.groupBoxSerial = new System.Windows.Forms.GroupBox();
-			this.groupBoxTcpIp = new System.Windows.Forms.GroupBox();
+			this.groupBoxIpPort = new System.Windows.Forms.GroupBox();
 			this.txtPort = new System.Windows.Forms.TextBox();
 			this.label8 = new System.Windows.Forms.Label();
 			this.label9 = new System.Windows.Forms.Label();
 			this.txtIp = new System.Windows.Forms.TextBox();
 			((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
 			this.groupBoxSerial.SuspendLayout();
-			this.groupBoxTcpIp.SuspendLayout();
+			this.groupBoxIpPort.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnRead
@@ -382,18 +382,18 @@
 			// 
 			// groupBoxTcpIp
 			// 
-			this.groupBoxTcpIp.Controls.Add(this.txtPort);
-			this.groupBoxTcpIp.Controls.Add(this.label8);
-			this.groupBoxTcpIp.Controls.Add(this.label9);
-			this.groupBoxTcpIp.Controls.Add(this.txtIp);
-			this.groupBoxTcpIp.Location = new System.Drawing.Point(18, 106);
-			this.groupBoxTcpIp.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.groupBoxTcpIp.Name = "groupBoxTcpIp";
-			this.groupBoxTcpIp.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.groupBoxTcpIp.Size = new System.Drawing.Size(474, 116);
-			this.groupBoxTcpIp.TabIndex = 33;
-			this.groupBoxTcpIp.TabStop = false;
-			this.groupBoxTcpIp.Text = "Source Settings";
+			this.groupBoxIpPort.Controls.Add(this.txtPort);
+			this.groupBoxIpPort.Controls.Add(this.label8);
+			this.groupBoxIpPort.Controls.Add(this.label9);
+			this.groupBoxIpPort.Controls.Add(this.txtIp);
+			this.groupBoxIpPort.Location = new System.Drawing.Point(18, 106);
+			this.groupBoxIpPort.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+			this.groupBoxIpPort.Name = "groupBoxTcpIp";
+			this.groupBoxIpPort.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+			this.groupBoxIpPort.Size = new System.Drawing.Size(474, 116);
+			this.groupBoxIpPort.TabIndex = 33;
+			this.groupBoxIpPort.TabStop = false;
+			this.groupBoxIpPort.Text = "Source Settings";
 			// 
 			// txtPort
 			// 
@@ -439,7 +439,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1313, 628);
 			this.Controls.Add(this.groupBoxSerial);
-			this.Controls.Add(this.groupBoxTcpIp);
+			this.Controls.Add(this.groupBoxIpPort);
 			this.Controls.Add(this.label5);
 			this.Controls.Add(this.cboSource);
 			this.Controls.Add(this.chart1);
@@ -470,8 +470,8 @@
 			((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
 			this.groupBoxSerial.ResumeLayout(false);
 			this.groupBoxSerial.PerformLayout();
-			this.groupBoxTcpIp.ResumeLayout(false);
-			this.groupBoxTcpIp.PerformLayout();
+			this.groupBoxIpPort.ResumeLayout(false);
+			this.groupBoxIpPort.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -505,7 +505,7 @@
         private System.Windows.Forms.ComboBox cboSource;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.GroupBox groupBoxSerial;
-        private System.Windows.Forms.GroupBox groupBoxTcpIp;
+        private System.Windows.Forms.GroupBox groupBoxIpPort;
         private System.Windows.Forms.TextBox txtPort;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
