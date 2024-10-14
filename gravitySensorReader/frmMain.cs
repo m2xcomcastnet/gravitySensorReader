@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
@@ -19,8 +20,10 @@ namespace gravitySensorReader
         private SerialPort serialPort;
         private GravityData gravityData = new GravityData();
         private CancellationTokenSource networkConnectionTokenSource;
+		private Queue<(decimal, decimal, decimal)> readingsQueue = new Queue<(decimal, decimal, decimal)>();
+		private const int ReadingsQueueMaxSize = 100; // Previous 5 seconds
 
-        public frmMain()
+		public frmMain()
         {
             InitializeComponent();
         }
@@ -45,9 +48,15 @@ namespace gravitySensorReader
             txtXMin.DataBindings.Add("Text", gravityData, "XMin");
             txtYMin.DataBindings.Add("Text", gravityData, "YMin");
             txtZMin.DataBindings.Add("Text", gravityData, "ZMin");
+			txtXRpm.DataBindings.Add("Text", gravityData, nameof(gravityData.XFrequency));
+			txtYRpm.DataBindings.Add("Text", gravityData, nameof(gravityData.YFrequency));
+			txtZRpm.DataBindings.Add("Text", gravityData, nameof(gravityData.ZFrequency));
+			txtXPeriod.DataBindings.Add("Text", gravityData, nameof(gravityData.XPeriod));
+			txtYPeriod.DataBindings.Add("Text", gravityData, nameof(gravityData.YPeriod));
+			txtZPeriod.DataBindings.Add("Text", gravityData, nameof(gravityData.ZPeriod));
 
-            // Select highest port speed by default
-            cboPortSpeed.SelectedIndex = cboPortSpeed.Items.Count - 1;
+			// Select highest port speed by default
+			cboPortSpeed.SelectedIndex = cboPortSpeed.Items.Count - 1;
 
             cboSource.SelectedIndex = 0;
         }
@@ -61,12 +70,12 @@ namespace gravitySensorReader
                 btnRead.Enabled = false;
                 btnStop.Enabled = true;
 
-                if (cboSource.SelectedIndex == 0)
+                if (cboSource.SelectedIndex == 1)
                 {
                     var tcpPort = int.Parse(txtPort.Text);
                     await StartTcpListener(txtIp.Text, tcpPort);
                 }
-                else if(cboSource.SelectedIndex == 1)
+                else if(cboSource.SelectedIndex == 0)
                 {
 					var tcpPort = int.Parse(txtPort.Text);
 					await StartUdpListener(txtIp.Text, tcpPort);				
@@ -117,10 +126,20 @@ namespace gravitySensorReader
             var dataPoints = dataMessages[0].Split(',');
             if (dataPoints?.Length == 3 && decimal.TryParse(dataPoints[0], out decimal x) && decimal.TryParse(dataPoints[1], out decimal y) && decimal.TryParse(dataPoints[2], out decimal z))
             {
-                // This causes UI updates so it has to happen in the main thread.
-                this.Invoke(new Action(() =>
-                {
-                    gravityData.ProcessDataPoint(x, y, z);
+				if (readingsQueue.Count >= ReadingsQueueMaxSize)
+				{
+					readingsQueue.Dequeue(); // Remove the oldest data point
+				}
+				readingsQueue.Enqueue((x,y,z));
+
+                var frequencies = FourierAnalysis.CalculateFrequency(readingsQueue.ToArray().Reverse().ToArray());
+
+				// This causes UI updates so it has to happen in the main thread.
+				this.Invoke(new Action(() =>
+				{
+					gravityData.SetFrequencies(frequencies);
+
+					gravityData.ProcessDataPoint(x, y, z);
                     UpdateChart(x, y, z);
                 }));
 

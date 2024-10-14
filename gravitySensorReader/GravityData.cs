@@ -21,8 +21,35 @@ namespace gravitySensorReader
         public decimal? YMin { get; set; }
         public decimal? ZMin { get; set; }
 
+		public decimal? XFrequency { get; set; }
+		public decimal? YFrequency { get; set; }
+		public decimal? ZFrequency { get; set; }
 
-        public void ProcessDataPoint(decimal xDataPoint, decimal yDataPoint, decimal zDataPoint)
+		public decimal? XPeriod { get => ComputeAndRoundPeriod(XFrequency); }
+		public decimal? YPeriod { get => ComputeAndRoundPeriod(YFrequency); }
+		public decimal? ZPeriod { get => ComputeAndRoundPeriod(ZFrequency); }
+
+        private static decimal? ComputeAndRoundPeriod(decimal? frequency)
+        {
+			if (frequency.HasValue && frequency != 0)
+			{
+				var period = 1 / frequency;
+				return (decimal)Math.Round((double)period, 4);
+			}
+			return null;
+		}
+
+		public void SetFrequencies((decimal X, decimal Y, decimal Z) calculation)
+        {
+            XFrequency = Math.Round(calculation.X, 4);
+			YFrequency = Math.Round(calculation.Y, 4);
+			ZFrequency = Math.Round(calculation.Z, 4); 
+            PropertyChanged(this, new PropertyChangedEventArgs(nameof(XFrequency)));
+			PropertyChanged(this, new PropertyChangedEventArgs(nameof(YFrequency)));
+			PropertyChanged(this, new PropertyChangedEventArgs(nameof(ZFrequency)));
+		}
+
+		public void ProcessDataPoint(decimal xDataPoint, decimal yDataPoint, decimal zDataPoint)
         {
             // Discard junk data
             if (xDataPoint == 0 || yDataPoint == 0 || zDataPoint == 0) return;
@@ -39,7 +66,6 @@ namespace gravitySensorReader
             if (!YMin.HasValue || yDataPoint < YMin.Value) YMin = yDataPoint;
             if (!ZMin.HasValue || zDataPoint < ZMin.Value) ZMin = zDataPoint;
 
-
             // Raise data binding events for the UI at most 10 times a second. The UI was freezing without this.
             if (new TimeSpan(DateTime.Now.Ticks - LastUiRefresh.Ticks).TotalMilliseconds > 50)
             {
@@ -52,7 +78,8 @@ namespace gravitySensorReader
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(XMin)));
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(YMin)));
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(ZMin)));
-                LastUiRefresh = DateTime.Now;
+
+				LastUiRefresh = DateTime.Now;
             }
         }
     }
